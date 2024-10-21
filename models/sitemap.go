@@ -5,6 +5,6 @@ type SitemapConfig struct {
 	Savepath       string
 	Filename       string
 	Concurrency    int
-	Crawltimeout   int
-	Requesttimeout int
+	Crawltimeout   int64
+	Requesttimeout int64
 }

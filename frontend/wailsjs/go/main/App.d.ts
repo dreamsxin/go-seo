@@ -10,8 +10,8 @@ export function GenerateSitemap(arg1:models.SitemapConfig):Promise<void>;
 
 export function GetConfig():Promise<models.Config>;
 
-export function OpenDirectoryDialog():Promise<string>;
+export function GetSitemapConfig():Promise<models.SitemapConfig>;
 
-export function RunLoop():Promise<void>;
+export function OpenDirectoryDialog():Promise<string>;
 
 export function SetConfig(arg1:string,arg2:models.Config):Promise<void>;

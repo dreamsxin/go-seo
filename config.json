@@ -1,1 +1,1 @@
-{"Status":0,"Port":9000,"AutoProxy":true,"SaveLogFile":false,"Filter":false,"FilterHost":""}
+{"Status":0,"Port":9000,"AutoProxy":true,"SaveLogFile":false,"Filter":false,"FilterHost":"","Sitemap":{"Dsturl":"https://baidu.com","Savepath":".","Filename":"sitemap.xml","Concurrency":10,"Crawltimeout":10,"Requesttimeout":10}}

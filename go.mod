@@ -7,7 +7,6 @@ toolchain go1.23.2
 require (
 	github.com/dreamsxin/go-sitemap v1.0.6
 	github.com/energye/energy v1.109.1184
-	github.com/google/martian/v3 v3.3.3
 	github.com/wailsapp/wails/v2 v2.9.2
 	go.uber.org/zap v1.27.0
 )
@@ -44,9 +43,6 @@ require (
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231120223509-83a465c0220f // indirect
-	google.golang.org/grpc v1.59.0 // indirect
-	google.golang.org/protobuf v1.31.0 // indirect
 )
 
 // replace github.com/wailsapp/wails/v2 v2.9.2 => D:\gowork\pkg\mod

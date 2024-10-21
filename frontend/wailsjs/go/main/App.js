@@ -18,12 +18,12 @@ export function GetConfig() {
   return window['go']['main']['App']['GetConfig']();
 }
 
-export function OpenDirectoryDialog() {
-  return window['go']['main']['App']['OpenDirectoryDialog']();
+export function GetSitemapConfig() {
+  return window['go']['main']['App']['GetSitemapConfig']();
 }
 
-export function RunLoop() {
-  return window['go']['main']['App']['RunLoop']();
+export function OpenDirectoryDialog() {
+  return window['go']['main']['App']['OpenDirectoryDialog']();
 }
 
 export function SetConfig(arg1, arg2) {

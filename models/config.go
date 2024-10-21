@@ -7,4 +7,5 @@ type Config struct {
 	SaveLogFile bool
 	Filter      bool
 	FilterHost  string
+	Sitemap     SitemapConfig
 }

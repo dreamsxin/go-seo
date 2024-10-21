@@ -9,9 +9,14 @@ import ConfigTab from './tabs/config.vue'
 
 
 const fullscreenLoading = ref(false)
+const data = reactive({
+  config: {}
+})
 
 onMounted(() => {
   GetConfig().then(config => {
+    console.log("GetConfig", config)
+    data.config = config
   })
 })
 
@@ -49,7 +54,7 @@ EventsOn("error", function (v) {
           <span>网站地图</span>
         </span>
       </template>
-      <SitemapTab @run="fullscreenLoading=true"></SitemapTab>
+      <SitemapTab @run="fullscreenLoading=true" v-model="data"></SitemapTab>
     </el-tab-pane>
     <el-tab-pane label="配置">
       <ConfigTab></ConfigTab>

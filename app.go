@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/dreamsxin/go-seo/events"
@@ -20,20 +20,14 @@ import (
 	"github.com/dreamsxin/go-sitemap"
 	"github.com/dreamsxin/go-sitemap/crawl"
 	"github.com/energye/energy/logger"
-	"github.com/google/martian/v3"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 	"go.uber.org/zap"
 )
 
-const authorityName string = "GoNetSniffer Proxy Authority"
-
 // App struct
 type App struct {
-	ctx      context.Context
-	config   models.Config
-	serve    *martian.Proxy
-	lock     sync.Mutex
-	dataChan chan *models.Packet
+	ctx    context.Context
+	config models.Config
 }
 
 // NewApp creates a new App application struct
@@ -44,43 +38,18 @@ func NewApp() *App {
 			Port:        9000,
 			AutoProxy:   true,
 			SaveLogFile: false,
+			Sitemap: models.SitemapConfig{
+				Dsturl:         "https://",
+				Savepath:       ".",
+				Filename:       "sitemap.xml",
+				Concurrency:    10,
+				Crawltimeout:   10,
+				Requesttimeout: 10,
+			},
 		},
-		dataChan: make(chan *models.Packet, 1000),
 	}
 
-	go a.RunLoop()
 	return a
-}
-
-func (a *App) RunLoop() {
-
-	file, err := os.OpenFile(fmt.Sprintf("log%s.txt", time.Now().Format(time.DateOnly)), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	// 循环读取 dataChan
-	for packet := range a.dataChan {
-		// 处理数据
-		if a.config.FilterHost != "" {
-			if !strings.Contains(packet.Host, a.config.FilterHost) {
-				continue
-			}
-		}
-
-		runtime.EventsEmit(a.ctx, "Packet", packet)
-		if a.config.SaveLogFile {
-			b, err := json.Marshal(packet)
-			if err != nil {
-				log.Println("json.Marshal", err)
-				continue
-			}
-			// 追加内容
-			file.Write(b)
-			file.WriteString("\n\n")
-		}
-	}
 }
 
 func (a *App) startup(ctx context.Context) {
@@ -130,8 +99,14 @@ func (a *App) OpenDirectoryDialog() (string, error) {
 	return directoryPath, nil
 }
 
-func (a *App) GenerateSitemap(config models.SitemapConfig) {
+func (a *App) GetSitemapConfig() models.SitemapConfig {
+	return a.config.Sitemap
+}
 
+func (a *App) GenerateSitemap(config models.SitemapConfig) {
+	a.config.Sitemap = config
+
+	log.Println("GenerateSitemap", config)
 	go func() {
 		client := &http.Client{
 			Transport: &http.Transport{
@@ -141,7 +116,7 @@ func (a *App) GenerateSitemap(config models.SitemapConfig) {
 				MaxConnsPerHost:     config.Concurrency,
 				IdleConnTimeout:     crawl.DefaultKeepAlive,
 			},
-			Timeout: time.Duration(config.Requesttimeout),
+			Timeout: time.Duration(config.Requesttimeout) * time.Second,
 		}
 
 		oldurls := make(map[string]*sitemap.URL)
@@ -149,9 +124,9 @@ func (a *App) GenerateSitemap(config models.SitemapConfig) {
 		siteMap, siteMapErr := crawl.CrawlDomain(
 			config.Dsturl,
 			crawl.SetMaxConcurrency(config.Concurrency),
-			crawl.SetCrawlTimeout(time.Duration(config.Crawltimeout)),
+			crawl.SetCrawlTimeout(time.Duration(config.Crawltimeout)*time.Second),
 			crawl.SetKeepAlive(crawl.DefaultKeepAlive),
-			crawl.SetTimeout(time.Duration(config.Requesttimeout)),
+			crawl.SetTimeout(time.Duration(config.Requesttimeout)*time.Second),
 			crawl.SetClient(client),
 			crawl.SetSitemapURLS(oldurls),
 			crawl.SetCrawlValidator(func(v *sitemap.URL) bool {
@@ -173,7 +148,7 @@ func (a *App) GenerateSitemap(config models.SitemapConfig) {
 		}
 		//siteMap.WriteMap(os.Stdout)
 
-		file, err := os.OpenFile(filepath.Join(config.Savepath, config.Savepath), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
+		file, err := os.OpenFile(filepath.Join(config.Savepath, config.Filename), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 		if err != nil {
 			a.FireErrorEvent(events.EVENT_CODE_SITEMAP, fmt.Sprintf("生成失败: %s", err.Error()))
 			return
@@ -198,6 +173,7 @@ func (a *App) GenerateSitemap(config models.SitemapConfig) {
 			a.FireErrorEvent(events.EVENT_CODE_SITEMAP, fmt.Sprintf("生成失败: %s", err.Error()))
 		} else {
 			a.FireEvent(events.EVENT_CODE_SITEMAP, "生成成功")
+			exec.Command(`explorer`, `/select,`, filepath.Join(config.Savepath, config.Filename)).Run()
 		}
 	}()
 }
@@ -208,6 +184,6 @@ func (a *App) FireEvent(code int, msg string) {
 }
 
 func (a *App) FireErrorEvent(code int, msg string) {
-
+	log.Println("FireErrorEvent", code, msg)
 	runtime.EventsEmit(a.ctx, events.EVENT_TYPE_ERROR, &events.Event{Type: events.ERROR, Code: code, Message: msg})
 }
