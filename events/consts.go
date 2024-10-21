@@ -6,3 +6,7 @@ const (
 	EVENT_TYPE_RESPONSE = "response"
 	EVENT_TYPE_ERROR    = "error"
 )
+
+const (
+	EVENT_CODE_SITEMAP = iota
+)

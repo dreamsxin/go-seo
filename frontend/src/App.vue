@@ -8,18 +8,25 @@ import SitemapTab from './tabs/sitemap.vue'
 import ConfigTab from './tabs/config.vue'
 
 
+const fullscreenLoading = ref(false)
+
 onMounted(() => {
   GetConfig().then(config => {
   })
 })
 
-const activeName = ref('first')
-
-const handleClick = (tab, event) => {
-  console.log(tab, event)
-}
-
+EventsOn("response", function (v) {
+  console.log("response", v)
+  fullscreenLoading.value = false
+  ElNotification({
+    title: '',
+    message: v.Message,
+    type: 'success',
+  })
+});
 EventsOn("error", function (v) {
+  console.log("error", v)
+  fullscreenLoading.value = false
   ElNotification({
     title: 'Error',
     message: v.Message,
@@ -27,10 +34,12 @@ EventsOn("error", function (v) {
   })
 });
 
+
 </script>
 
 <template>
-  <el-tabs type="border-card" class="demo-tabs" height="100vh">
+  <el-tabs type="border-card" class="demo-tabs" height="100vh"  v-loading.fullscreen.lock="fullscreenLoading"
+        element-loading-background="rgba(0, 0, 0, 0.7)">
     <el-tab-pane>
       <template #label>
         <span class="custom-tabs-label">
@@ -40,7 +49,7 @@ EventsOn("error", function (v) {
           <span>网站地图</span>
         </span>
       </template>
-      <SitemapTab></SitemapTab>
+      <SitemapTab @run="fullscreenLoading=true"></SitemapTab>
     </el-tab-pane>
     <el-tab-pane label="配置">
       <ConfigTab></ConfigTab>

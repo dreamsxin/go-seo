@@ -2,18 +2,27 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
+	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/dreamsxin/go-netsniffer/models"
+	"github.com/dreamsxin/go-seo/events"
+	"github.com/dreamsxin/go-seo/models"
+	"github.com/dreamsxin/go-sitemap"
+	"github.com/dreamsxin/go-sitemap/crawl"
+	"github.com/energye/energy/logger"
 	"github.com/google/martian/v3"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
-	//"net/http/cookiejar"
+	"go.uber.org/zap"
 )
 
 const authorityName string = "GoNetSniffer Proxy Authority"
@@ -119,4 +128,86 @@ func (a *App) OpenDirectoryDialog() (string, error) {
 		return "", fmt.Errorf("failed opening dialog - %s", err.Error())
 	}
 	return directoryPath, nil
+}
+
+func (a *App) GenerateSitemap(config models.SitemapConfig) {
+
+	go func() {
+		client := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+				MaxIdleConns:        config.Concurrency,
+				MaxIdleConnsPerHost: config.Concurrency,
+				MaxConnsPerHost:     config.Concurrency,
+				IdleConnTimeout:     crawl.DefaultKeepAlive,
+			},
+			Timeout: time.Duration(config.Requesttimeout),
+		}
+
+		oldurls := make(map[string]*sitemap.URL)
+
+		siteMap, siteMapErr := crawl.CrawlDomain(
+			config.Dsturl,
+			crawl.SetMaxConcurrency(config.Concurrency),
+			crawl.SetCrawlTimeout(time.Duration(config.Crawltimeout)),
+			crawl.SetKeepAlive(crawl.DefaultKeepAlive),
+			crawl.SetTimeout(time.Duration(config.Requesttimeout)),
+			crawl.SetClient(client),
+			crawl.SetSitemapURLS(oldurls),
+			crawl.SetCrawlValidator(func(v *sitemap.URL) bool {
+				return true
+			}),
+			crawl.SetEventCallbackReadLink(func(hrefResolved *url.URL, linkReader *crawl.LinkReader) {
+				if strings.Contains(hrefResolved.Path, "/404") {
+					logger.Debug("Read",
+						zap.String("page", hrefResolved.String()),
+						zap.String("link", linkReader.URL()),
+					)
+				}
+			}),
+		)
+
+		if siteMapErr != nil {
+			a.FireErrorEvent(events.EVENT_CODE_SITEMAP, fmt.Sprintf("生成失败: %s", siteMapErr.Error()))
+			return
+		}
+		//siteMap.WriteMap(os.Stdout)
+
+		file, err := os.OpenFile(filepath.Join(config.Savepath, config.Savepath), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
+		if err != nil {
+			a.FireErrorEvent(events.EVENT_CODE_SITEMAP, fmt.Sprintf("生成失败: %s", err.Error()))
+			return
+		}
+		defer file.Close()
+
+		// 初始化
+		sm := sitemap.New()
+
+		urls := siteMap.GetURLS()
+		for _, v := range urls {
+			sm.Add(v)
+		}
+
+		//排序
+		sort.Slice(sm.URLs, func(i, j int) bool {
+			return sm.URLs[i].Priority >= sm.URLs[j].Priority
+		})
+
+		_, err = sm.WriteTo(file)
+		if err != nil {
+			a.FireErrorEvent(events.EVENT_CODE_SITEMAP, fmt.Sprintf("生成失败: %s", err.Error()))
+		} else {
+			a.FireEvent(events.EVENT_CODE_SITEMAP, "生成成功")
+		}
+	}()
+}
+
+func (a *App) FireEvent(code int, msg string) {
+
+	runtime.EventsEmit(a.ctx, events.EVENT_TYPE_RESPONSE, &events.Event{Type: events.GENERAL, Code: code, Message: msg})
+}
+
+func (a *App) FireErrorEvent(code int, msg string) {
+
+	runtime.EventsEmit(a.ctx, events.EVENT_TYPE_ERROR, &events.Event{Type: events.ERROR, Code: code, Message: msg})
 }

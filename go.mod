@@ -1,12 +1,15 @@
-module github.com/dreamsxin/go-netsniffer
+module github.com/dreamsxin/go-seo
 
 go 1.23
 
 toolchain go1.23.2
 
 require (
+	github.com/dreamsxin/go-sitemap v1.0.6
+	github.com/energye/energy v1.109.1184
 	github.com/google/martian/v3 v3.3.3
 	github.com/wailsapp/wails/v2 v2.9.2
+	go.uber.org/zap v1.27.0
 )
 
 require (
@@ -27,12 +30,15 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/samber/lo v1.38.1 // indirect
+	github.com/snabb/diagio v1.0.4 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/wailsapp/go-webview2 v1.0.16 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
+	go.uber.org/atomic v1.11.0 // indirect
+	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/crypto v0.25.0 // indirect
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
 	golang.org/x/net v0.27.0 // indirect
