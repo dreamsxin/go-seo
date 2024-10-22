@@ -30,7 +30,6 @@
         </el-form-item>
         <el-form-item>
             <el-button type="primary" @click="startGenerateSitemap">开始</el-button>
-            <el-button>Cancel</el-button>
         </el-form-item>
     </el-form>
 </template>
@@ -55,7 +54,7 @@ const emit = defineEmits(['run'])
 
 const selectSavepath = () => {
     OpenDirectoryDialog().then((path) => {
-        data.config.savepath = path
+        data.config.Savepath = path
     })
 }
 

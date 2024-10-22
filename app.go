@@ -12,16 +12,13 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/dreamsxin/go-seo/events"
 	"github.com/dreamsxin/go-seo/models"
 	"github.com/dreamsxin/go-sitemap"
 	"github.com/dreamsxin/go-sitemap/crawl"
-	"github.com/energye/energy/logger"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
-	"go.uber.org/zap"
 )
 
 // App struct
@@ -133,12 +130,7 @@ func (a *App) GenerateSitemap(config models.SitemapConfig) {
 				return true
 			}),
 			crawl.SetEventCallbackReadLink(func(hrefResolved *url.URL, linkReader *crawl.LinkReader) {
-				if strings.Contains(hrefResolved.Path, "/404") {
-					logger.Debug("Read",
-						zap.String("page", hrefResolved.String()),
-						zap.String("link", linkReader.URL()),
-					)
-				}
+
 			}),
 		)
 
