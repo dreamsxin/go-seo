@@ -6,6 +6,7 @@ import { Aim } from '@element-plus/icons-vue'
 import { GetConfig, SetConfig } from '../wailsjs/go/main/App'
 import SitemapTab from './tabs/sitemap.vue'
 import ConfigTab from './tabs/config.vue'
+import FiletransferTab from './tabs/filetransfer.vue'
 
 
 const fullscreenLoading = ref(false)
@@ -59,8 +60,9 @@ EventsOn("error", function (v) {
     <el-tab-pane label="配置">
       <ConfigTab></ConfigTab>
     </el-tab-pane>
-    <el-tab-pane label="Role">Role</el-tab-pane>
-    <el-tab-pane label="Task">Task</el-tab-pane>
+    <el-tab-pane label="文件传输">
+      <FiletransferTab></FiletransferTab>
+    </el-tab-pane>
   </el-tabs>
 </template>
 <style scoped>
