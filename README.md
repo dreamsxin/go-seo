@@ -21,3 +21,8 @@ wails build
 #scoop install nsis
 wails build -nsis
 ```
+
+Donation
+--------
+
+* [捐贈（Donation）](https://github.com/dreamsxin/cphalcon7/blob/master/DONATE.md)
