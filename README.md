@@ -22,6 +22,10 @@ wails build
 wails build -nsis
 ```
 
+## 截图
+
+![screenshot](https://github.com/dreamsxin/go-seo/blob/main/screenshot.png?raw=true)
+
 Donation
 --------
 
